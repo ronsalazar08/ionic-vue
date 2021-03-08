@@ -6,8 +6,15 @@
         <ion-input type="text" required v-model="enteredTitle" />
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Image URL</ion-label>
-        <ion-input type="url" required v-model="enteredImageUrl" />
+        <!-- <ion-label position="floating">Image URL</ion-label>
+        <ion-input type="url" required v-model="enteredImageUrl" /> -->
+        <ion-thumbnail slot="start">
+          <img :src="takenImageUrl" />
+        </ion-thumbnail>
+        <ion-button fill="clear" type="button" @click="takePhoto">
+          <ion-icon slot="start" :icon="camera"></ion-icon>
+          Take Photo
+        </ion-button>
       </ion-item>
       <ion-item>
         <ion-label position="floating">Description</ion-label>
@@ -26,7 +33,15 @@ import {
   IonInput,
   IonTextarea,
   IonButton,
+  IonThumbnail,
+  IonIcon,
 } from "@ionic/vue";
+
+import { camera } from "ionicons/icons";
+import { Plugins, CameraResultType, CameraSource } from "@capacitor/core";
+
+const { Camera } = Plugins;
+
 export default {
   emits: ["save-memory"],
   components: {
@@ -36,19 +51,30 @@ export default {
     IonInput,
     IonTextarea,
     IonButton,
+    IonThumbnail,
+    IonIcon,
   },
   data() {
     return {
       enteredTitle: "",
-      enteredImageUrl: "",
       enteredDescription: "",
+      takenImageUrl: null,
+      camera,
     };
   },
   methods: {
+    async takePhoto() {
+      const photo = await Camera.getPhoto({
+        resultType: CameraResultType.Uri,
+        source: CameraSource.Camera,
+        quality: 60,
+      });
+      this.takenImageUrl = photo.webPath;
+    },
     submitForm() {
       const memoryData = {
         title: this.enteredTitle,
-        image: this.enteredImageUrl,
+        image: this.takenImageUrl,
         description: this.enteredDescription,
       };
       this.$emit("save-memory", memoryData);
